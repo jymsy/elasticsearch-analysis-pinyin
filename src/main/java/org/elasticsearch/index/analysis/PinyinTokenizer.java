@@ -12,6 +12,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -65,6 +66,10 @@ public class PinyinTokenizer extends Tokenizer {
             termAtt.setEmpty();
             StringBuilder stringBuilder = new StringBuilder();
             StringBuilder firstLetters = new StringBuilder();
+            //////////////////////////////add jym
+            ArrayList<ArrayList<String>> total = new ArrayList<ArrayList<String>>();
+            ArrayList<ArrayList<String>> first = new ArrayList<ArrayList<String>>();
+            ////////////////////////////////
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
                 if (c < 128) {
@@ -73,15 +78,27 @@ public class PinyinTokenizer extends Tokenizer {
                     try {
                         String[] strs = PinyinHelper.toHanyuPinyinStringArray(c, format);
                         if (strs != null) {
-                            //get first result by default
-                            String first_value = strs[0];
-                            //TODO more than one pinyin
-                            stringBuilder.append(first_value);
-                            if (this.padding_char.length() > 0) {
-                                stringBuilder.append(this.padding_char);
+                            if(first_letter.equals("prefix_custom")){
+                                ArrayList<String> tempTotal = new ArrayList<String>();
+                                ArrayList<String> tempFirst = new ArrayList<String>();
+                                for(int j=0;j < strs.length; j++){
+                                    if(!tempTotal.contains(strs[j])){
+                                        tempTotal.add(strs[j]);
+                                        tempFirst.add(strs[j].charAt(0)+"");
+                                    }
+                                }
+                                total.add(tempTotal);
+                                first.add(tempFirst);
+                            }else{
+                                //get first result by default
+                                String first_value = strs[0];
+                                //TODO more than one pinyin
+                                stringBuilder.append(first_value);
+                                if (this.padding_char.length() > 0) {
+                                    stringBuilder.append(this.padding_char);
+                                }
+                                firstLetters.append(first_value.charAt(0));
                             }
-                            firstLetters.append(first_value.charAt(0));
-
                         }
                     } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
                         badHanyuPinyinOutputFormatCombination.printStackTrace();
@@ -109,6 +126,10 @@ public class PinyinTokenizer extends Tokenizer {
                 termAtt.append(stringBuilder.toString());
             } else if (first_letter.equals("only")) {
                 termAtt.append(firstLetters.toString());
+            } else if(first_letter.equals("prefix_custom")){
+                termAtt.append(this.connectStr(total,this.padding_char,0,""));
+                termAtt.append(this.connectStr(first,this.padding_char,0,""));
+                termAtt.append(stringBuilder.toString());
             }
 
 
@@ -131,5 +152,17 @@ public class PinyinTokenizer extends Tokenizer {
         this.done = false;
     }
 
-
+    public String connectStr(ArrayList<ArrayList<String>> strArray, String padding,int currentPosition,String curStr){
+        String retStr="";
+        if(currentPosition+1<=strArray.size()){
+            ArrayList<String> temp = strArray.get(currentPosition);
+            for(String value:temp){
+                retStr+=connectStr(strArray,padding,currentPosition+1,curStr+value);
+                retStr+=padding;
+//                System.out.println("round:"+retStr+" pos:"+currentPosition+" current:"+curStr);
+            }
+            curStr=retStr;
+        }
+        return curStr;
+    }
 }
