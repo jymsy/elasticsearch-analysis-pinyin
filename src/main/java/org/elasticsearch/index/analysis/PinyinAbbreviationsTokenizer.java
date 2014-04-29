@@ -38,20 +38,20 @@ public class PinyinAbbreviationsTokenizer extends CharTokenizer {
     @Override
     public boolean isTokenChar(int c){
         Matcher matcher = pattern.matcher(String.valueOf(c));
-            return  Character.isLetterOrDigit(c)|| matcher.matches();
+        return  Character.isLetterOrDigit(c)|| matcher.matches();
     }
 
   @Override
   protected int normalize(int c) {
-       try {
-                    String[] strs = PinyinHelper.toHanyuPinyinStringArray((char) c, format);
-                    if (strs != null) {
-                        termAtt.append(strs[0]);
-                       return  strs[0].codePointAt(0);
-                    }
-                } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
-                    badHanyuPinyinOutputFormatCombination.printStackTrace();
-                }
+          try {
+              String[] strs = PinyinHelper.toHanyuPinyinStringArray((char) c, format);
+              if (strs != null) {
+//                  termAtt.append(strs[0]);delete for fix bug .3x档案->dada
+                  return  strs[0].codePointAt(0);
+              }
+          } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
+              badHanyuPinyinOutputFormatCombination.printStackTrace();
+          }
       return c;
   }
 }
