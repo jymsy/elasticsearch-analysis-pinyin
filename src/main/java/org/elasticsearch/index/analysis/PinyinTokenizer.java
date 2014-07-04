@@ -84,7 +84,9 @@ public class PinyinTokenizer extends Tokenizer {
                                 for(int j=0;j < strs.length; j++){
                                     if(!tempTotal.contains(strs[j])){
                                         tempTotal.add(strs[j]);
-                                        tempFirst.add(strs[j].charAt(0)+"");
+                                        if(!tempFirst.contains(strs[j].charAt(0)+"")){
+                                            tempFirst.add(strs[j].charAt(0)+"");
+                                        }
                                     }
                                 }
                                 total.add(tempTotal);
